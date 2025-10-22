@@ -1,0 +1,96 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assurant</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+            text-align: center;
+            color: #333;
+        }
+        header {
+            background-color: #007bff;
+            color: white;
+            padding: 10px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 10px;
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            margin-top: 0;
+        }
+        table {
+            width: 100%;
+            margin-top: 20px;
+            border-collapse: collapse;
+        }
+        table, th, td {
+            border: 1px solid #ccc;
+        }
+        th, td {
+            padding: 8px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Assurant</h1>
+    </header>
+    <div class="container">
+        <h2>Common Stock Shares Outstanding</h2>
+        <table>
+            <tr>
+                <th>ID</th>
+                <th>Value</th>
+                <th>Fiscal Year</th>
+            </tr>
+            <tr>
+                <td id="share-entity-name">Assurant</td>
+                <td id="share-max-value">Max Value</td>
+                <td id="share-max-fy">Max Fiscal Year</td>
+            </tr>
+            <tr>
+                <td id="share-entity-name">Assurant</td>
+                <td id="share-min-value">Min Value</td>
+                <td id="share-min-fy">Min Fiscal Year</td>
+            </tr>
+        </table>
+    </div>
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const cik = urlParams.get('CIK') || '0001267238';
+
+        fetch(`https://data.sec.gov/api/xbrl/companyconcept/CIK${cik}/dei/EntityCommonStockSharesOutstanding.json`, {
+            headers: {
+                'User-Agent': 'WebScraperBot/1.0'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            const entityName = data.entityName;
+            const filteredShares = data.units.shares.filter(share => share.fy > "2020" && !isNaN(share.val));
+
+            const maxShare = filteredShares.reduce((max, share) => max.val > share.val ? max : share);
+            const minShare = filteredShares.reduce((min, share) => min.val < share.val ? min : share);
+
+            document.getElementById('share-entity-name').textContent = entityName;
+            document.getElementById('share-max-value').textContent = maxShare.val;
+            document.getElementById('share-max-fy').textContent = maxShare.fy;
+            document.getElementById('share-min-value').textContent = minShare.val;
+            document.getElementById('share-min-fy').textContent = minShare.fy;
+        })
+        .catch(error => console.error(error));
+    </script>
+</body>
+</html>
